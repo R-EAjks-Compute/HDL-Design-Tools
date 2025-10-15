@@ -36,7 +36,7 @@ jobs:
       - name: Install packages
         run: |
           sudo apt-get update
-          sudo apt-get install --yes ninja build-essential
+          sudo apt-get install --yes ninja-build build-essential
       - name: Build and package
         run: |
           mkdir build
