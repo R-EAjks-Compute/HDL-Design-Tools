@@ -39,9 +39,9 @@ jobs:
           sudo apt-get install --yes ninja-build build-essential
       - name: Build and package
         run: |
-          mkdir build
-          pushd build
-          cmake -G Ninja -DCMAKE_BUILD_TYPE=Release ..
+          mkdir Build
+          pushd Build
+          cmake -G "Ninja" -DCMAKE_BUILD_TYPE=Release ../Code
           ninja package
           popd
       # --- Étape 4 : Publication du paquet sur une GitHub Release ---
