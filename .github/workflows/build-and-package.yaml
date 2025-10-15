@@ -37,13 +37,25 @@ jobs:
         run: |
           sudo apt-get update
           sudo apt-get install --yes ninja-build build-essential
+      - name: Install CMake
+        run: |
+          mkdir ./Build
+          pushd ./Build
+          gzip -cd ../Resources/Packages/cmake-4.1.2.tar.gz | tar -xvf -
+          cd cmake-4.1.2
+          ./bootstrap
+          make -j
+          make install
+          popd
+          rm -rf ./Build
       - name: Build and package
         run: |
-          mkdir Build
-          pushd Build
+          mkdir ./Build
+          pushd ./Build
           cmake -G "Ninja" -DCMAKE_BUILD_TYPE=Release ../Code
           ninja package
           popd
+          rm -rf ./Build
       # --- Étape 4 : Publication du paquet sur une GitHub Release ---
       # Cette étape ne s'exécute que si le workflow est déclenché par un tag de version.
       - name: Find Debian Package File
