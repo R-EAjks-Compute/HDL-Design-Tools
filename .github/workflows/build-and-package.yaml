@@ -1,0 +1,68 @@
+#   Collection of HDL Design Tools
+#   Copyright (c) 2025 Andrea and Eric DELAGE <Contact@by-EAjks.Com>
+#
+#   This program is free software: you can redistribute it and/or modify
+#   it under the terms of the GNU General Public License as published by
+#   the Free Software Foundation, either version 3 of the License, or
+#   (at your option) any later version.
+#
+#   This program is distributed in the hope that it will be useful,
+#   but WITHOUT ANY WARRANTY; without even the implied warranty of
+#   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+#   GNU General Public License for more details.
+#
+#   You should have received a copy of the GNU General Public License
+#   along with this program.  If not, see <https://www.gnu.org/licenses/>.
+
+#   Copyright (c) 2025 Andrea and Eric DELAGE <Contact@by-EAjks.Com>
+#   See the file "LICENSE" for the full license governing this code.
+
+name: (CI/CD) Build and publish packages
+on:
+  push:
+    branches:
+      - '**'
+    tags:
+      - 'v[0-9]+.[0-9]+.[0-9]+'
+jobs:
+  build-deb-packages:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v5.0.0
+        with:
+          fetch-depth: 0
+        # https://github.com/actions/checkout/tags
+      - name: Install packages
+        run: |
+          sudo apt-get update
+          sudo apt-get install --yes ninja build-essential
+      - name: Build and package
+        run: |
+          mkdir build
+          pushd build
+          cmake -G Ninja -DCMAKE_BUILD_TYPE=Release ..
+          ninja package
+          popd
+      # --- Étape 4 : Publication du paquet sur une GitHub Release ---
+      # Cette étape ne s'exécute que si le workflow est déclenché par un tag de version.
+      - name: Find Debian Package File
+        id: find_package
+        run: |
+          # Cherche le fichier .deb généré (sera dans le répertoire parent de build)
+          DEB_FILE=$(ls *.deb | head -n 1)
+          echo "deb_file=$DEB_FILE" >> $GITHUB_OUTPUT
+
+      - name: Create or Update GitHub Release
+        if: startsWith(github.ref, 'refs/tags/v')
+        uses: softprops/action-gh-release@v1
+        with:
+          # Nom du fichier trouvé à l'étape précédente
+          files: ${{ steps.find_package.outputs.deb_file }}
+          # Utilise le nom du tag comme titre de la release
+          name: Release ${{ github.ref_name }}
+          # Créer une release préliminaire si le tag n'existe pas encore
+          prerelease: true
+        env:
+          # Le jeton d'accès est automatiquement fourni par GitHub Actions
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
