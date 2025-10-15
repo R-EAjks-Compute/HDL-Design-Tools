@@ -1,5 +1,4 @@
 {
-  "image": "docker.io/eajkseajks/cpp-cuda-devenv-sdk-core:3",
-  "features": {
-  }
+  "name": "Cpp-CUDA",
+  "image": "docker.io/eajkseajks/cpp-cuda-devenv-sdk-core:3"
 }
